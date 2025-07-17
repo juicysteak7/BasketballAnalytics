@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8"/>
+		<title>Rust Frontend</title>
+		<link rel="stylesheet" href="/style-c920ca43256fdcb9.css" integrity="sha384-OLBgp1GsljhM2TJ+sbHjaiH9txEUvgdDTAzHv2P24donTt6/529l+9Ua0vFImLlb"/>
+		
+<script type="module">
+import init, * as bindings from '/BasketballAnalyticsWeb-c1d93406ddd41d63.js';
+const wasm = await init({ module_or_path: '/BasketballAnalyticsWeb-c1d93406ddd41d63_bg.wasm' });
+
+
+window.wasmBindings = bindings;
+
+
+dispatchEvent(new CustomEvent("TrunkApplicationStarted", {detail: {wasm}}));
+
+</script>
+	<link rel="modulepreload" href="/BasketballAnalyticsWeb-c1d93406ddd41d63.js" crossorigin="anonymous" integrity="sha384-uGzcAQMQMAgFdVnIn8N+3PRzCLCJwBb8oC09xtAklKVveovsLftlPr809JlQgBLB"><link rel="preload" href="/BasketballAnalyticsWeb-c1d93406ddd41d63_bg.wasm" crossorigin="anonymous" integrity="sha384-KdSj/Wv1ifO8weKjSkpvuVoaaGWtP9eSyENxe3cDhg/ZMJkZQ8hncb7XW56tRVLu" as="fetch" type="application/wasm"></head>
+</html>

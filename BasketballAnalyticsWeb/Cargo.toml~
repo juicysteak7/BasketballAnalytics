@@ -1,0 +1,15 @@
+[package]
+name = "basketball-analytics-web"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+yew = { version="^0.21.0", features = ["csr"] }
+reqwest = { version = "0.12.0", features = ["json"]}
+serde = "1.0"
+wasm-bindgen-futures = "0.4"
+wasm-bindgen = "0.2"
+serde_json = "1.0"
+log = "0.4"
+wasm-logger = "0.2"
+web-sys = { version = "0.3", features = [ "HtmlInputElement", "HtmlSelectElement", "Element" ] }
