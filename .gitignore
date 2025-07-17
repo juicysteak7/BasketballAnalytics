@@ -3,6 +3,7 @@
 debug
 target
 dist
+dist/*
 
 *~
 *.un~
