@@ -1,4 +1,5 @@
 use yew::prelude::*;
+use crate::{Player, PlayerData};
 // use reqwest::Client;
 // use wasm_bindgen_futures::spawn_local;
 // use wasm_bindgen::JsCast;
@@ -16,6 +17,12 @@ impl Component for App {
         true
     }
     fn view(&self, _ctx: &Context<Self>) -> Html {
+        let sample_player = PlayerData {
+            name: "Lebron".to_string(),
+            points: 25,
+            assists: 8,
+            rebounds: 7
+        };
         html! {
              <table style="border-collapse: collapse; width: 100%;">
                  <thead>
@@ -27,6 +34,8 @@ impl Component for App {
                  </tr>
                  </thead>
                  <tbody>
+                 <Player player={sample_player}/>
+                 /*
                  <tr>
                  <td style="border: 1px solid black; padding: 8px;">{"LeBron James"}</td>
                  <td style="border: 1px solid black; padding: 8px;">{"25"}</td>
@@ -39,6 +48,7 @@ impl Component for App {
                  <td style="border: 1px solid black; padding: 8px;">{"6"}</td>
                  <td style="border: 1px solid black; padding: 8px;">{"5"}</td>
                  </tr>
+                 */
                  </tbody>
                  </table>
         }
