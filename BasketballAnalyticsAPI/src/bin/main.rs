@@ -1,4 +1,4 @@
-use rust_api::{ Application, DataBase, Applications };
+use rust_api::{ Player, DataBase, Players };
 use serde::Serialize;
 use tokio;
 use tokio::net::TcpListener;
@@ -14,10 +14,10 @@ async fn main() -> surrealdb::Result<()> {
         .allow_headers(Any); // Allow all headers
                 
     let app = Router::new()
-        .route("/api/add_application", put(add_application))
-        .route("/api/get_all_applications", get(get_all_applications))
-        .route("/api/update_application", put(update_application))
-        .route("/api/delete_application", put(delete_application))
+        .route("/api/add_player", put(add_player))
+        .route("/api/get_all_players", get(get_all_players))
+        .route("/api/update_player", put(update_player))
+        .route("/api/delete_player", put(delete_player))
         .layer(cors);
     let addr:SocketAddr = "127.0.0.1:6969".parse().unwrap();
     let listener = TcpListener::bind(&addr).await.unwrap();
@@ -28,96 +28,96 @@ async fn main() -> surrealdb::Result<()> {
     Ok(())
 }
 
-async fn add_application(Json(payload):Json<Application>) -> impl axum::response::IntoResponse {
+async fn add_player(Json(payload):Json<Player>) -> impl axum::response::IntoResponse {
     use axum::Json;
     use serde::Serialize;
 
     let db = DataBase::sign_in("root", "root").await.unwrap();
-    let result = db.create_application(payload).await.unwrap();
+    let result = db.add_player(payload).await.unwrap();
 
     #[derive(Serialize)]
     struct ResponseMessage {
-        applications: Applications
+        players: Players
     }
 
-    let mut applications = Applications::new();
+    let mut players = Players::new();
 
     match result { 
         Some(result) => {
-            applications.add(result);
+            players.add(result);
             return Json(ResponseMessage {
-                applications
+                players
             })
         } 
         None => {
             return Json(ResponseMessage {
-                applications
+                players
             })
         }
     }
 }
 
-async fn update_application(Json(payload):Json<(Application, String)>) -> impl axum::response::IntoResponse {
+async fn update_player(Json(payload):Json<(Player, u64)>) -> impl axum::response::IntoResponse {
     use axum::Json;
     use serde::Serialize;
 
     let db = DataBase::sign_in("root", "root").await.unwrap();
-    let result = db.update_application(payload.0, payload.1).await.unwrap();
+    let result = db.update_player(payload.0, payload.1).await.unwrap();
 
     #[derive(Serialize)]
     struct ResponseMessage {
-        applications: Applications
+        players: Players
     }
 
-    let mut applications = Applications::new();
+    let mut players = Players::new();
 
-    if let Some(app) = result {
-        applications.add(app);
+    if let Some(player) = result {
+        players.add(player);
     }
 
-    return Json(ResponseMessage { applications })
+    return Json(ResponseMessage { players })
 }
 
-async fn delete_application(Json(payload):Json<Application>) -> impl axum::response::IntoResponse {
+async fn delete_player(Json(payload):Json<Player>) -> impl axum::response::IntoResponse {
     use axum::Json;
     use serde::Serialize;
 
     let db = DataBase::sign_in("root", "root").await.unwrap();
-    let result = db.delete_application(payload).await.unwrap();
+    let result = db.delete_player(payload).await.unwrap();
 
     #[derive(Serialize)]
     struct ResponseMessage {
-        applications: Applications
+        players: Players
     }
 
-    let mut applications = Applications::new();
+    let mut players = Players::new();
 
-    if let Some(app) = result {
-        applications.add(app);
+    if let Some(player) = result {
+        players.add(player);
     }
 
-    return Json(ResponseMessage { applications })
+    return Json(ResponseMessage { players })
 }
 
-async fn get_all_applications() -> impl axum::response::IntoResponse {
+async fn get_all_players() -> impl axum::response::IntoResponse {
     use axum::Json;
     use serde::Serialize;
 
     let db = DataBase::sign_in("root", "root").await.unwrap();
-    let applications = db.get_all_applications().await;
+    let applications = db.get_all_players().await;
 
     #[derive(Serialize)]
     struct ResponseMessage {
-        applications: Applications,
+        players: Players,
     }
-    match applications {
-        Ok(apps) => {
-            println!("Applications: {:?}", apps);
-            Json(ResponseMessage { applications: apps, })
+    match players {
+        Ok(players) => {
+            println!("Players: {:?}", players);
+            Json(ResponseMessage { players: players, })
         }
         Err(e) => {
             eprintln!("{}",e);
-            Json(ResponseMessage { applications: Applications::new(),})
+            Json(ResponseMessage { players: Players::new(),})
         }
     }
 }

@@ -21,69 +21,53 @@ impl DataBase {
             Ok(DataBase { db, _signed_in: true })
         }
 
-        pub async fn create_application(&self, application:Application) -> Result<Option<Application>, Error>{
-            let created: Option<Application> = self.db.create(("application", application.application_id.clone())).content(application).await?;
+        pub async fn add_player(&self, player:Player) -> Result<Option<Player>, Error>{
+            let created: Option<Player> = self.db.create(("player", player.id.clone())).content(player).await?;
             Ok(created)
         }
 
-        pub async fn get_all_applications(&self) -> Result<Applications, Error>{
-            let applications:Vec<Application> = self.db.select("application").await?;
-            Ok(Applications { applications })
+        pub async fn get_all_players(&self) -> Result<Players, Error>{
+            let players:Vec<Player> = self.db.select("player").await?;
+            Ok(Players { players })
         }
 
-        pub async fn update_application(&self, application:Application, old_id: String) -> Result<Option<Application>, Error>{
-            let updated:Option<Application> = self.db.update(("application", old_id)).content(application).await?;
+        pub async fn update_player(&self, player:Player, old_id: u64) -> Result<Option<Player>, Error>{
+            let updated:Option<Player> = self.db.update(("player", old_id)).content(player).await?;
             Ok(updated)
         }
 
-        pub async fn delete_application(&self, application:Application) -> Result<Option<Application>, Error>{
-            let delete = self.db.delete(("application", application.application_id)).await?;
+        pub async fn delete_player(&self, player:Player) -> Result<Option<Player>, Error>{
+            let delete = self.db.delete(("player", player.id)).await?;
             Ok(delete)
         }
 }
 
-/*
+#[derive(Debug, Serialize, serde::Deserialize, Clone)]
+pub struct Player {
+    id:u64,
+    name:String,
+    points:u64,
+    assists:u64,
+    rebounds:u64,
+}
+
+impl Player {
+    pub fn new(id:u64, name:String, points:u64, assists:u64, rebounds:u64) -> Player {
+        Player {id, name, points, assists, rebounds}
+    }
+}
 
 #[derive(Debug, Serialize, serde::Deserialize, Clone)]
-pub enum Status {
-        InProgress,
-            Applied,
-                Rejected,
-                    Interviewing
+pub struct Players {
+    players: Vec<Player>,
 }
 
-#[derive(Debug, Serialize, serde::Deserialize, Clone)]
-pub struct Application {
-        application_id: String,
-            company: String,
-                status: Status,
-                    job_title: String,
-                        location: String,
-                            link: String,
-                                application_date: String,
-                                    tasks: Vec<String>,
+impl Players {
+    pub fn new() -> Players {
+        let players:Vec<Players> = Vec::new();
+        Players { players }
+    }
+    pub fn add(&mut self, player: Player) {
+        self.players.push(player);
+    }
 }
-
-impl Application {
-        pub fn new(application_id:String, company: String, status:Status, job_title:String, location:String, link:String, application_date: String, tasks:Vec<String>) -> Application{
-                    Application { application_id, company, status, job_title, location, link, application_date, tasks}
-                        }
-}
-
-#[derive(Debug, Serialize, serde::Deserialize)]
-pub struct Applications {
-        applications:Vec<Application>
-}
-
-impl Applications {
-        pub fn new() -> Applications {
-                    let applications:Vec<Application> = Vec::new();
-                            Applications{ applications }
-                                }
-
-            pub fn add(&mut self, application: Application) {
-                        self.applications.push(application);
-                            }
-}
-
-*/
