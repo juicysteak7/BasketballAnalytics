@@ -31,7 +31,7 @@ impl DataBase {
             Ok(Players { players })
         }
 
-        pub async fn update_player(&self, player:Player, old_id: u64) -> Result<Option<Player>, Error>{
+        pub async fn update_player(&self, player:Player, old_id: String) -> Result<Option<Player>, Error>{
             let updated:Option<Player> = self.db.update(("player", old_id)).content(player).await?;
             Ok(updated)
         }
@@ -44,7 +44,7 @@ impl DataBase {
 
 #[derive(Debug, Serialize, serde::Deserialize, Clone)]
 pub struct Player {
-    id:u64,
+    id:String,
     name:String,
     points:u64,
     assists:u64,
@@ -52,7 +52,7 @@ pub struct Player {
 }
 
 impl Player {
-    pub fn new(id:u64, name:String, points:u64, assists:u64, rebounds:u64) -> Player {
+    pub fn new(id:String, name:String, points:u64, assists:u64, rebounds:u64) -> Player {
         Player {id, name, points, assists, rebounds}
     }
 }
@@ -64,7 +64,7 @@ pub struct Players {
 
 impl Players {
     pub fn new() -> Players {
-        let players:Vec<Players> = Vec::new();
+        let players:Vec<Player> = Vec::new();
         Players { players }
     }
     pub fn add(&mut self, player: Player) {

@@ -1,4 +1,4 @@
-use rust_api::{ Player, DataBase, Players };
+use BasketballAnalyticsAPI::{ Player, DataBase, Players };
 use serde::Serialize;
 use tokio;
 use tokio::net::TcpListener;
@@ -57,7 +57,7 @@ async fn add_player(Json(payload):Json<Player>) -> impl axum::response::IntoResp
     }
 }
 
-async fn update_player(Json(payload):Json<(Player, u64)>) -> impl axum::response::IntoResponse {
+async fn update_player(Json(payload):Json<(Player, String)>) -> impl axum::response::IntoResponse {
     use axum::Json;
     use serde::Serialize;
 
@@ -104,7 +104,7 @@ async fn get_all_players() -> impl axum::response::IntoResponse {
     use serde::Serialize;
 
     let db = DataBase::sign_in("root", "root").await.unwrap();
-    let applications = db.get_all_players().await;
+    let players = db.get_all_players().await;
 
     #[derive(Serialize)]
     struct ResponseMessage {
