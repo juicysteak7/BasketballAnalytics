@@ -13,6 +13,10 @@ pub enum Msg {
     Submit,
     Close,
     Open,
+    UpdateName(String),
+    UpdatePoints(u64),
+    UpdateAssists(u64),
+    UpdateRebounds(u64),
 }
 
 pub struct AddPlayerModal {
@@ -43,6 +47,22 @@ impl Component for AddPlayerModal {
                 ctx.props().on_close.emit(());
                 true
             },
+            Msg::UpdateName(name) => {
+                self.player.name = name;
+                true
+            },
+            Msg::UpdatePoints(points) => {
+                self.player.points = points;
+                true
+            },
+            Msg::UpdateAssists(assists) => {
+                self.player.assists = assists;
+                true
+            }
+            Msg::UpdateRebounds(rebounds) => {
+                self.player.rebounds = rebounds;
+                true
+            }
         }
     }
 
@@ -62,6 +82,53 @@ impl Component for AddPlayerModal {
 
         html! {
             <div>
+                <div>
+                    <input
+                        placeholder="Name"
+                        label="Name"
+                        value={self.player.name.clone()}
+                        oninput={link.callback(|e: InputEvent| {
+                            let value = e.target_unchecked_into::<web_sys::HtmlInputElement>().value();
+                            Msg::UpdateName(value)
+                        })}
+                    />
+                </div>
+                <div>
+                    <input
+                        placeholder=0
+                        type="number"
+                        label="Points"
+                        value={self.player.points.to_string()}
+                        oninput={link.callback(|e: InputEvent| {
+                            let value = e.target_unchecked_into::<web_sys::HtmlInputElement>().value();
+                            Msg::UpdatePoints(value)
+                        })}
+                    />
+                </div>
+                <div>
+                    <input
+                        placeholder=0
+                        type="number"
+                        label="Assists"
+                        value={self.player.assists.to_string()}
+                        oninput={link.callback(|e: InputEvent| {
+                            let value = e.target_unchecked_into::<web_sys::HtmlInputElement>().value();
+                            Msg::UpdateAssists(value)
+                        })}
+                    />
+                </div>
+                <div>
+                    <input
+                        placeholder=0
+                        type="number"
+                        label="Rebounds"
+                        value={self.player.rebounds.to_string()}
+                        oninput={link.callback(|e: InputEvent| {
+                            let value = e.target_unchecked_into::<web_sys::HtmlInputElement>().value();
+                            Msg::UpdateRebounds(value)
+                        })}
+                    />
+                </div>
                 <div>
                     <button onclick={link.callback(|_| Msg::Close)}>{"Close"}</button>
                     <button onclick={link.callback(|_| Msg::Submit)}>{"Submit"}</button>
