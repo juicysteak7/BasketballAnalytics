@@ -1,56 +1,76 @@
 use yew::prelude::*;
-use crate::{Player, PlayerData};
+use crate::{Player, AddPlayerModal};
 // use reqwest::Client;
 // use wasm_bindgen_futures::spawn_local;
 // use wasm_bindgen::JsCast;
 
-pub struct App {
+pub enum Msg {
+    OpenModal,
+    CloseModal,
 
 }
+pub struct App {
+    modal_open: bool,
+    len:usize,
+}
 impl Component for App {
-    type Message = ();
+    type Message = Msg;
     type Properties = ();
     fn create(_ctx: &Context<Self>) -> Self {
-        Self {  }
+        Self { modal_open: false, len:0 }
     }
-    fn update(&mut self, _ctx: &Context<Self>, _msg: Self::Message) -> bool {
-        true
+    fn update(&mut self, _ctx: &Context<Self>, msg: Self::Message) -> bool {
+        match msg {
+            Msg::OpenModal => {
+                self.modal_open = true;
+                true
+            },
+            Msg::CloseModal => {
+                self.modal_open = false;
+                true
+            }
+        }
     }
-    fn view(&self, _ctx: &Context<Self>) -> Html {
-        let sample_player = PlayerData {
+    fn view(&self, ctx: &Context<Self>) -> Html {
+        let sample_player = Player {
             name: "Lebron".to_string(),
             points: 25,
             assists: 8,
-            rebounds: 7
+            rebounds: 7,
+            id: "1".to_string(),
         };
+        let mut players:Vec<Player> = Vec::new();
+        players.push(sample_player);
+        let link = ctx.link();
         html! {
-             <table style="border-collapse: collapse; width: 100%;">
-                 <thead>
-                 <tr>
-                 <th style="border: 1px solid black; padding: 8px;">{"Name"}</th>
-                 <th style="border: 1px solid black; padding: 8px;">{"Points"}</th>
-                 <th style="border: 1px solid black; padding: 8px;">{"Assists"}</th>
-                 <th style="border: 1px solid black; padding: 8px;">{"Rebounds"}</th>
-                 </tr>
-                 </thead>
-                 <tbody>
-                 <Player player={sample_player}/>
-                 /*
-                 <tr>
-                 <td style="border: 1px solid black; padding: 8px;">{"LeBron James"}</td>
-                 <td style="border: 1px solid black; padding: 8px;">{"25"}</td>
-                 <td style="border: 1px solid black; padding: 8px;">{"8"}</td>
-                 <td style="border: 1px solid black; padding: 8px;">{"7"}</td>
-                 </tr>
-                 <tr>
-                 <td style="border: 1px solid black; padding: 8px;">{"Steph Curry"}</td>
-                 <td style="border: 1px solid black; padding: 8px;">{"30"}</td>
-                 <td style="border: 1px solid black; padding: 8px;">{"6"}</td>
-                 <td style="border: 1px solid black; padding: 8px;">{"5"}</td>
-                 </tr>
-                 */
-                 </tbody>
-                 </table>
+            <div>
+                <button onclick={link.callback(|_| Msg::OpenModal)}>{ "Add Player" }</button>
+                <table style="border-collapse: collapse; width: 100%;">
+                    <thead>
+                    <tr>
+                    <th style="border: 1px solid black; padding: 8px;">{"Name"}</th>
+                    <th style="border: 1px solid black; padding: 8px;">{"Points"}</th>
+                    <th style="border: 1px solid black; padding: 8px;">{"Assists"}</th>
+                    <th style="border: 1px solid black; padding: 8px;">{"Rebounds"}</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {
+                        for players.iter().map(|player| html!{
+                            <Player player={player.clone()}/>
+                        })
+                    }
+                    </tbody>
+                </table>
+
+                <AddPlayerModal
+                    is_open={self.modal_open}
+                    on_close={link.callback(|_| Msg::CloseModal)}
+                    on_submit={link.callback(|_| Msg::CloseModal)}
+                    player_id={self.len}
+                />
+            </div>
+            
         }
     }
 }

@@ -1,20 +1,18 @@
 use yew::prelude::*;
 
+
 #[derive(Properties, PartialEq, Clone, Debug)]
-pub struct PlayerData {
+pub struct PlayerProps {
+    pub player: Player
+}
+
+#[derive(Properties, PartialEq, Clone, Debug)]
+pub struct Player {
+    pub id: String,
     pub name: String,
     pub points: u64,
     pub assists: u64,
     pub rebounds: u64,
-}
-
-#[derive(Properties, PartialEq)]
-pub struct PlayerProps {
-    pub player: PlayerData
-}
-
-pub struct Player {
-    player: PlayerData
 }
 
 impl Component for Player {
@@ -22,7 +20,8 @@ impl Component for Player {
     type Properties = PlayerProps;
 
     fn create(ctx: &Context<Self>) -> Self{
-        Self { player: ctx.props().player.clone() }
+        let player = ctx.props().player.clone();
+        Self { id: player.id, name: player.name, points: player.points, assists: player.assists, rebounds: player.rebounds }
     }
 
     fn update(&mut self, _ctx: &Context<Self>, _msg: Self::Message) -> bool {
@@ -30,8 +29,8 @@ impl Component for Player {
     }
 
     fn view(&self, ctx: &Context<Self>) -> Html {
-        let player = self.player.clone();
-        let link = ctx.link();
+        let player = self.clone();
+        let _link = ctx.link();
         html!{
             <tr>
                 <td style="border: 1px solid black; padding: 8px;">{player.name}</td>
