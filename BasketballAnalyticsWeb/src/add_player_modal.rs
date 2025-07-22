@@ -101,7 +101,7 @@ impl Component for AddPlayerModal {
                         value={self.player.points.to_string()}
                         oninput={link.callback(|e: InputEvent| {
                             let value = e.target_unchecked_into::<web_sys::HtmlInputElement>().value();
-                            Msg::UpdatePoints(value)
+                            Msg::UpdatePoints(value.parse::<u64>().expect("Failed to parse into u64."))
                         })}
                     />
                 </div>
@@ -113,7 +113,7 @@ impl Component for AddPlayerModal {
                         value={self.player.assists.to_string()}
                         oninput={link.callback(|e: InputEvent| {
                             let value = e.target_unchecked_into::<web_sys::HtmlInputElement>().value();
-                            Msg::UpdateAssists(value)
+                            Msg::UpdateAssists(value.parse::<u64>().expect("Failed to parse into u64."))
                         })}
                     />
                 </div>
@@ -125,7 +125,7 @@ impl Component for AddPlayerModal {
                         value={self.player.rebounds.to_string()}
                         oninput={link.callback(|e: InputEvent| {
                             let value = e.target_unchecked_into::<web_sys::HtmlInputElement>().value();
-                            Msg::UpdateRebounds(value)
+                            Msg::UpdateRebounds(value.parse::<u64>().expect("Failed to parse into u64."))
                         })}
                     />
                 </div>
