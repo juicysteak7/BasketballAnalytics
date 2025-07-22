@@ -7,9 +7,10 @@ use crate::{Player, AddPlayerModal};
 pub enum Msg {
     OpenModal,
     CloseModal,
-
+    OnSubmit(Player)
 }
 pub struct App {
+    players: Vec<Player>,
     modal_open: bool,
     len:usize,
 }
@@ -17,7 +18,7 @@ impl Component for App {
     type Message = Msg;
     type Properties = ();
     fn create(_ctx: &Context<Self>) -> Self {
-        Self { modal_open: false, len:0 }
+        Self { modal_open: false, len:0, players: Vec::new() }
     }
     fn update(&mut self, _ctx: &Context<Self>, msg: Self::Message) -> bool {
         match msg {
@@ -28,7 +29,13 @@ impl Component for App {
             Msg::CloseModal => {
                 self.modal_open = false;
                 true
-            }
+            },
+            Msg::OnSubmit(player) => {
+                log::info!("player:",player);
+                self.players.push(player);
+                self.modal_open = false;
+                true
+            },
         }
     }
     fn view(&self, ctx: &Context<Self>) -> Html {
@@ -39,8 +46,7 @@ impl Component for App {
             rebounds: 7,
             id: "1".to_string(),
         };
-        let mut players:Vec<Player> = Vec::new();
-        players.push(sample_player);
+        //self.players.push(sample_player);
         let link = ctx.link();
         html! {
             <div>

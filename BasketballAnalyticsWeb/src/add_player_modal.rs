@@ -45,6 +45,10 @@ impl Component for AddPlayerModal {
             Msg::Submit => {
                 ctx.props().on_submit.emit(self.player.clone());
                 ctx.props().on_close.emit(());
+                self.player.name.clear();
+                self.player.points = 0;
+                self.player.assists = 0;
+                self.player.rebounds = 0;
                 true
             },
             Msg::UpdateName(name) => {
