@@ -40,6 +40,7 @@ impl Component for AddPlayerModal {
             },
             Msg::Close => {
                 ctx.props().on_close.emit(());
+                self.is_open = false;
                 true
             },
             Msg::Submit => {
@@ -49,6 +50,7 @@ impl Component for AddPlayerModal {
                 self.player.points = 0;
                 self.player.assists = 0;
                 self.player.rebounds = 0;
+                self.is_open = false;
                 true
             },
             Msg::UpdateName(name) => {
@@ -74,6 +76,8 @@ impl Component for AddPlayerModal {
         let props = ctx.props();
         self.is_open = props.is_open;
         self.player.id = props.player_id.to_string();
+        log::info!("player id: {:?}", props.player_id.to_string());
+        log::info!("player id: {:?}", self.player.id);
         true
     }
 

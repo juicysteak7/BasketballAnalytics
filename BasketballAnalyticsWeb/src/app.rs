@@ -31,8 +31,9 @@ impl Component for App {
                 true
             },
             Msg::OnSubmit(player) => {
-                log::info!("player:",player);
+                log::info!("player: {:?}",player);
                 self.players.push(player);
+                self.len = self.players.len();
                 self.modal_open = false;
                 true
             },
@@ -62,8 +63,9 @@ impl Component for App {
                     </thead>
                     <tbody>
                     {
-                        for players.iter().map(|player| html!{
-                            <Player player={player.clone()}/>
+                        for self.players.iter().map(|player|
+                        html!{
+                            <Player player={player.clone()} key={player.id.clone()}/>
                         })
                     }
                     </tbody>
@@ -72,7 +74,7 @@ impl Component for App {
                 <AddPlayerModal
                     is_open={self.modal_open}
                     on_close={link.callback(|_| Msg::CloseModal)}
-                    on_submit={link.callback(|_| Msg::CloseModal)}
+                    on_submit={link.callback(|player| Msg::OnSubmit(player))}
                     player_id={self.len}
                 />
             </div>
