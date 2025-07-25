@@ -4,6 +4,8 @@ debug
 target
 dist
 dist/*
+database.db
+database.db/*
 
 *~
 *.un~
