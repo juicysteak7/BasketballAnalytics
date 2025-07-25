@@ -22,7 +22,8 @@ impl DataBase {
         }
 
         pub async fn add_player(&self, player:Player) -> Result<Option<Player>, Error>{
-            let created: Option<Player> = self.db.create(("player", player.id.clone())).content(player).await?;
+            let created: Option<Player> = self.db.create(("player", player.player_id.clone())).content(player).await?;
+            println!("created: {:?}",created);
             Ok(created)
         }
 
@@ -37,14 +38,14 @@ impl DataBase {
         }
 
         pub async fn delete_player(&self, player:Player) -> Result<Option<Player>, Error>{
-            let delete = self.db.delete(("player", player.id)).await?;
+            let delete = self.db.delete(("player", player.player_id)).await?;
             Ok(delete)
         }
 }
 
 #[derive(Debug, Serialize, serde::Deserialize, Clone)]
 pub struct Player {
-    id:String,
+    player_id:String,
     name:String,
     points:u64,
     assists:u64,
@@ -52,8 +53,8 @@ pub struct Player {
 }
 
 impl Player {
-    pub fn new(id:String, name:String, points:u64, assists:u64, rebounds:u64) -> Player {
-        Player {id, name, points, assists, rebounds}
+    pub fn new(player_id:String, name:String, points:u64, assists:u64, rebounds:u64) -> Player {
+        Player {player_id, name, points, assists, rebounds}
     }
 }
 

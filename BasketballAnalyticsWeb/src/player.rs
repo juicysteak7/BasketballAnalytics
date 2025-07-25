@@ -1,14 +1,17 @@
 use yew::prelude::*;
-
+use serde_json;
+use reqwest::Client;
+use wasm_bindgen_futures::spawn_local;
+use wasm_bindgen::JsCast;
 
 #[derive(Properties, PartialEq, Clone, Debug)]
 pub struct PlayerProps {
     pub player: Player
 }
 
-#[derive(Properties, PartialEq, Clone, Debug)]
+#[derive(Properties, PartialEq, Clone, Debug, serde::Serialize, serde::Deserialize)]
 pub struct Player {
-    pub id: String,
+    pub player_id: String,
     pub name: String,
     pub points: u64,
     pub assists: u64,
@@ -21,7 +24,7 @@ impl Component for Player {
 
     fn create(ctx: &Context<Self>) -> Self{
         let player = ctx.props().player.clone();
-        Self { id: player.id, name: player.name, points: player.points, assists: player.assists, rebounds: player.rebounds }
+        Self { player_id: player.player_id, name: player.name, points: player.points, assists: player.assists, rebounds: player.rebounds }
     }
 
     fn update(&mut self, _ctx: &Context<Self>, _msg: Self::Message) -> bool {

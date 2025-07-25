@@ -1,8 +1,8 @@
 use yew::prelude::*;
 use crate::{Player, AddPlayerModal};
-// use reqwest::Client;
-// use wasm_bindgen_futures::spawn_local;
-// use wasm_bindgen::JsCast;
+use reqwest::Client;
+use wasm_bindgen_futures::spawn_local;
+use wasm_bindgen::JsCast;
 
 pub enum Msg {
     OpenModal,
@@ -32,9 +32,20 @@ impl Component for App {
             },
             Msg::OnSubmit(player) => {
                 log::info!("player: {:?}",player);
-                self.players.push(player);
+                self.players.push(player.clone());
                 self.len = self.players.len();
                 self.modal_open = false;
+
+                spawn_local(async move {
+                    match add_player(player).await {
+                        Ok(result) => {
+                            log::info!("Application added: {:?}", result);
+                        }
+                        Err(e) => {
+                            eprintln!("{}",e);
+                        }
+                    }
+                });
                 true
             },
         }
@@ -45,7 +56,7 @@ impl Component for App {
             points: 25,
             assists: 8,
             rebounds: 7,
-            id: "1".to_string(),
+            player_id: "1".to_string(),
         };
         //self.players.push(sample_player);
         let link = ctx.link();
@@ -65,7 +76,7 @@ impl Component for App {
                     {
                         for self.players.iter().map(|player|
                         html!{
-                            <Player player={player.clone()} key={player.id.clone()}/>
+                            <Player player={player.clone()} key={player.player_id.clone()}/>
                         })
                     }
                     </tbody>
@@ -81,4 +92,16 @@ impl Component for App {
             
         }
     }
+}
+
+#[derive(Debug, serde::Serialize, serde::Deserialize, Clone)]
+struct PlayerResponse {
+    players: Vec<Player>
+}
+
+async fn add_player(player:Player) -> Result<Vec<Player>, reqwest::Error> {
+    let client = Client::new();
+    let response = client.put("http://127.0.0.1:6969/api/add_player").json(&player).send().await?;
+    let data = response.json::<PlayerResponse>().await?;
+    Ok(data.players)
 }

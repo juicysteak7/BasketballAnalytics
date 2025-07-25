@@ -30,7 +30,7 @@ impl Component for AddPlayerModal {
 
     fn create(ctx: &Context<Self>) -> Self {
         let props = ctx.props();
-        Self {is_open: props.is_open, player: Player {id: props.player_id.to_string(), name: "".to_string(), points: 0, assists: 0, rebounds: 0 }}
+        Self {is_open: props.is_open, player: Player {player_id: props.player_id.to_string(), name: "".to_string(), points: 0, assists: 0, rebounds: 0 }}
     }
 
     fn update(&mut self, ctx: &Context<Self>, msg: Self::Message) -> bool {
@@ -75,9 +75,9 @@ impl Component for AddPlayerModal {
     fn changed (&mut self, ctx: &Context<Self>, _old_props: &Self::Properties) -> bool {
         let props = ctx.props();
         self.is_open = props.is_open;
-        self.player.id = props.player_id.to_string();
+        self.player.player_id = props.player_id.to_string();
         log::info!("player id: {:?}", props.player_id.to_string());
-        log::info!("player id: {:?}", self.player.id);
+        log::info!("player id: {:?}", self.player.player_id);
         true
     }
 
