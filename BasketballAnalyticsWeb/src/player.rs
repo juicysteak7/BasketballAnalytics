@@ -40,6 +40,9 @@ impl Component for Player {
                 <td style="border: 1px solid black; padding: 8px;">{player.points}</td>
                 <td style="border: 1px solid black; padding: 8px;">{player.assists}</td>
                 <td style="border: 1px solid black; padding: 8px;">{player.rebounds}</td>
+                <td style="border: 1px solid black; padding: 8px;">
+                    <button aria-label="Close">{"X"}</button>
+                </td>
             </tr>
         }
     }

@@ -72,7 +72,7 @@ impl Component for AddPlayerModal {
         }
     }
 
-    fn changed (&mut self, ctx: &Context<Self>, _old_props: &Self::Properties) -> bool {
+    fn changed (&mut self, ctx: &Context<Self>) -> bool {
         let props = ctx.props();
         self.is_open = props.is_open;
         self.player.player_id = props.player_id.to_string();

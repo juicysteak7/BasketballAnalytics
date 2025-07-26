@@ -9,6 +9,10 @@ pub enum Msg {
     CloseModal,
     OnSubmit(Player)
 }
+#[derive(Properties, PartialEq, Debug, Default)]
+pub struct AppProps {
+    pub players: Vec<Player>,
+}
 pub struct App {
     players: Vec<Player>,
     modal_open: bool,
@@ -16,9 +20,18 @@ pub struct App {
 }
 impl Component for App {
     type Message = Msg;
-    type Properties = ();
-    fn create(_ctx: &Context<Self>) -> Self {
-        Self { modal_open: false, len:0, players: Vec::new() }
+    type Properties = AppProps;
+    fn create(ctx: &Context<Self>) -> Self {
+        let props = ctx.props();
+        log::info!("props players: {:?}",props.players.clone());
+        Self { modal_open: false, len:0, players: props.players.clone() }
+    }
+    fn changed(&mut self, ctx: &Context<Self>) -> bool {
+        let props = ctx.props();
+        self.players = props.players.clone();
+        self.len = self.players.len();
+        log::info!("props players: {:?}",props.players.clone());
+        true
     }
     fn update(&mut self, _ctx: &Context<Self>, msg: Self::Message) -> bool {
         match msg {
@@ -70,6 +83,7 @@ impl Component for App {
                     <th style="border: 1px solid black; padding: 8px;">{"Points"}</th>
                     <th style="border: 1px solid black; padding: 8px;">{"Assists"}</th>
                     <th style="border: 1px solid black; padding: 8px;">{"Rebounds"}</th>
+                    <th style="border: 1px solid black; padding: 8px;">{"Remove"}</th>
                     </tr>
                     </thead>
                     <tbody>
@@ -94,12 +108,30 @@ impl Component for App {
     }
 }
 
-#[derive(Debug, serde::Serialize, serde::Deserialize, Clone)]
-struct PlayerResponse {
-    players: Vec<Player>
+
+
+pub async fn get_all_players() -> Result<Vec<Player>, reqwest::Error> {
+    #[derive(Debug, serde::Serialize, serde::Deserialize, Clone)]
+    struct PlayerResponse {
+        players: Players
+    }
+    #[derive(Debug, serde::Serialize, serde::Deserialize, Clone)]
+    struct Players {
+        players: Vec<Player>
+    }
+
+    let client = Client::new();
+    let response = client.get("http://127.0.0.1:6969/api/get_all_players").send().await?;
+    let data = response.json::<PlayerResponse>().await?;
+    Ok(data.players.players)
 }
 
 async fn add_player(player:Player) -> Result<Vec<Player>, reqwest::Error> {
+    #[derive(Debug, serde::Serialize, serde::Deserialize, Clone)]
+    struct PlayerResponse {
+        players: Vec<Player>
+    }
+
     let client = Client::new();
     let response = client.put("http://127.0.0.1:6969/api/add_player").json(&player).send().await?;
     let data = response.json::<PlayerResponse>().await?;

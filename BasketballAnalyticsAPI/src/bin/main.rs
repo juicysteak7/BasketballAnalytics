@@ -18,7 +18,7 @@ async fn main() -> surrealdb::Result<()> {
 
     let app = Router::new()
         .route("/api/add_player", put(add_player))
-        .route("/get_all_players", get(get_all_players))
+        .route("/api/get_all_players", get(get_all_players))
         .route("/update_player", put(update_player))
         .route("/delete_player", put(delete_player))
         .route("/", get(|| async {"Hello world!"}))
@@ -32,7 +32,7 @@ async fn main() -> surrealdb::Result<()> {
     // println!("App: {:?}, Listener: {:?}", app, listener);
     
     //axum::serve(listener,app).await.unwrap();
-    axum::serve(listener, app.into_make_service()).await.unwrap();
+    axum::serve(listener, app).await.unwrap();
     
     println!("Server running on {}", addr);
     Ok(())
