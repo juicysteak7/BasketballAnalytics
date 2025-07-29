@@ -1,47 +1,52 @@
 use yew::prelude::*;
-use crate::{ Player };
+use crate::{PlayerSeason};
 
 #[derive(Properties, PartialEq)]
-pub struct AddPlayerModalProps {
+pub struct AddDetailsModalProps {
     pub on_close: Callback<()>,
-    pub on_submit: Callback<Player>,
+    pub on_submit: Callback<PlayerSeason>,
     pub is_open: bool,
-    pub player_id: usize,
+    pub season_id: usize,
 }
 
 pub enum Msg {
     Submit,
     Close,
     Open,
-    UpdateName(String),
+    UpdateTeamName(String),
     UpdatePoints(f64),
     UpdateAssists(f64),
     UpdateRebounds(f64),
 }
 
-pub struct AddPlayerModal {
+pub struct AddDetailsModal {
     is_open: bool,
-    player: Player,
+    season: PlayerSeason,
 }
 
-impl Component for AddPlayerModal {
-    type Properties = AddPlayerModalProps;
+impl Component for AddDetailsModal {
+    type Properties = AddDetailsModalProps;
     type Message = Msg;
 
     fn create(ctx: &Context<Self>) -> Self {
-        let props = ctx.props();
-        Self {is_open: props.is_open, player: 
-            Player {
-                player_id: props.player_id.to_string(), 
-                name: "".to_string(), 
-                points: 0.0, 
-                assists: 0.0, 
-                rebounds: 0.0 }}
+        Self { is_open: ctx.props().is_open, season: PlayerSeason {
+            team_name: "".to_string(),
+            season_id: ctx.props().season_id.to_string(),
+            points: 0.0,
+            assists: 0.0,
+            rebounds: 0.0,
+        }}
     }
-
     fn update(&mut self, ctx: &Context<Self>, msg: Self::Message) -> bool {
         match msg {
-            Msg::Open => {
+            Msg::Submit => {
+                ctx.props().on_submit.emit(self.season.clone());
+                ctx.props().on_close.emit(());
+                self.is_open = false;
+                self.season.team_name.clear();
+                self.season.points = 0.0;
+                self.season.assists = 0.0;
+                self.season.rebounds = 0.0;
                 true
             },
             Msg::Close => {
@@ -49,61 +54,42 @@ impl Component for AddPlayerModal {
                 self.is_open = false;
                 true
             },
-            Msg::Submit => {
-                ctx.props().on_submit.emit(self.player.clone());
-                ctx.props().on_close.emit(());
-                self.player.name.clear();
-                self.player.points = 0.0;
-                self.player.assists = 0.0;
-                self.player.rebounds = 0.0;
-                self.is_open = false;
+            Msg::Open => {
+                self.is_open = true;
                 true
             },
-            Msg::UpdateName(name) => {
-                self.player.name = name;
+            Msg::UpdateTeamName(team_name) => {
+                self.season.team_name = team_name;
                 true
             },
             Msg::UpdatePoints(points) => {
-                self.player.points = points;
+                self.season.points = points;
                 true
             },
             Msg::UpdateAssists(assists) => {
-                self.player.assists = assists;
+                self.season.assists = assists;
                 true
-            }
+            },
             Msg::UpdateRebounds(rebounds) => {
-                self.player.rebounds = rebounds;
+                self.season.rebounds = rebounds;
                 true
-            }
+            },
         }
-    }
-
-    fn changed (&mut self, ctx: &Context<Self>) -> bool {
-        let props = ctx.props();
-        self.is_open = props.is_open;
-        self.player.player_id = props.player_id.to_string();
-        log::info!("player id: {:?}", props.player_id.to_string());
-        log::info!("player id: {:?}", self.player.player_id);
-        true
     }
 
     fn view(&self, ctx: &Context<Self>) -> Html {
-        if !self.is_open {
-            return html! {}
-        }
-
         let link = ctx.link();
 
-        html! {
+        html!{
             <div>
                 <div>
                     <input
-                        placeholder="Name"
-                        label="Name"
-                        value={self.player.name.clone()}
+                        placeholder="Team Name"
+                        label="Team Name"
+                        value={self.season.team_name.clone()}
                         oninput={link.callback(|e: InputEvent| {
                             let value = e.target_unchecked_into::<web_sys::HtmlInputElement>().value();
-                            Msg::UpdateName(value)
+                            Msg::UpdateTeamName(value)
                         })}
                     />
                 </div>
@@ -114,7 +100,7 @@ impl Component for AddPlayerModal {
                         label="Points"
                         step=".01"
                         pattern=r"[0-9]+([,\.][0-9]+)?"
-                        value={self.player.points.to_string()}
+                        value={self.season.points.to_string()}
                         oninput={link.callback(|e: InputEvent| {
                             let value = e.target_unchecked_into::<web_sys::HtmlInputElement>().value();
                             Msg::UpdatePoints(value.parse::<f64>().expect("Failed to parse into f64."))
@@ -128,7 +114,7 @@ impl Component for AddPlayerModal {
                         label="Assists"
                         step=".01"
                         pattern=r"[0-9]+([,\.][0-9]+)?"
-                        value={self.player.assists.to_string()}
+                        value={self.season.assists.to_string()}
                         oninput={link.callback(|e: InputEvent| {
                             let value = e.target_unchecked_into::<web_sys::HtmlInputElement>().value();
                             Msg::UpdateAssists(value.parse::<f64>().expect("Failed to parse into f64."))
@@ -142,7 +128,7 @@ impl Component for AddPlayerModal {
                         label="Rebounds"
                         step=".01"
                         pattern=r"[0-9]+([,\.][0-9]+)?"
-                        value={self.player.rebounds.to_string()}
+                        value={self.season.rebounds.to_string()}
                         oninput={link.callback(|e: InputEvent| {
                             let value = e.target_unchecked_into::<web_sys::HtmlInputElement>().value();
                             Msg::UpdateRebounds(value.parse::<f64>().expect("Failed to parse into f64."))

@@ -20,7 +20,7 @@ async fn main() -> surrealdb::Result<()> {
         .route("/api/add_player", put(add_player))
         .route("/api/get_all_players", get(get_all_players))
         .route("/update_player", put(update_player))
-        .route("/delete_player", put(delete_player))
+        .route("/api/delete_player", put(delete_player))
         .route("/", get(|| async {"Hello world!"}))
         .layer(cors);
     println!("Routing done...");

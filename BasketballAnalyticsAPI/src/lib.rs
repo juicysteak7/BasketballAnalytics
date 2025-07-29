@@ -47,13 +47,13 @@ impl DataBase {
 pub struct Player {
     player_id:String,
     name:String,
-    points:u64,
-    assists:u64,
-    rebounds:u64,
+    points:f64,
+    assists:f64,
+    rebounds:f64,
 }
 
 impl Player {
-    pub fn new(player_id:String, name:String, points:u64, assists:u64, rebounds:u64) -> Player {
+    pub fn new(player_id:String, name:String, points:f64, assists:f64, rebounds:f64) -> Player {
         Player {player_id, name, points, assists, rebounds}
     }
 }

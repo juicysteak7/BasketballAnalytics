@@ -1,5 +1,5 @@
 use yew::prelude::*;
-use crate::{Player, AddPlayerModal};
+use crate::{Player, AddPlayerModal, PlayerDetails};
 use reqwest::Client;
 use wasm_bindgen_futures::spawn_local;
 use wasm_bindgen::JsCast;
@@ -7,7 +7,10 @@ use wasm_bindgen::JsCast;
 pub enum Msg {
     OpenModal,
     CloseModal,
-    OnSubmit(Player)
+    OnSubmit(Player),
+    Delete(Player),
+    Select(Player),
+    UnSelect,
 }
 #[derive(Properties, PartialEq, Debug, Default)]
 pub struct AppProps {
@@ -17,6 +20,8 @@ pub struct App {
     players: Vec<Player>,
     modal_open: bool,
     len:usize,
+    player_selected: bool,
+    selected_player: Option<Player>
 }
 impl Component for App {
     type Message = Msg;
@@ -24,7 +29,7 @@ impl Component for App {
     fn create(ctx: &Context<Self>) -> Self {
         let props = ctx.props();
         log::info!("props players: {:?}",props.players.clone());
-        Self { modal_open: false, len:0, players: props.players.clone() }
+        Self { modal_open: false, len:0, players: props.players.clone(), player_selected: false, selected_player:None }
     }
     fn changed(&mut self, ctx: &Context<Self>) -> bool {
         let props = ctx.props();
@@ -61,50 +66,84 @@ impl Component for App {
                 });
                 true
             },
+            Msg::Delete(to_delete) => {
+                self.players.retain(|player| player.player_id != to_delete.player_id);
+                self.len = self.players.len();
+
+                spawn_local(async move {
+                    match delete_player(to_delete).await {
+                        Ok(result) => {
+                            log::info!("Application added: {:?}", result);
+                        }
+                        Err(e) => {
+                            eprintln!("{}",e);
+                        }
+                    }
+                });
+                true
+            },
+            Msg::Select(player) => {
+                self.player_selected = true;
+                self.selected_player = Some(player.clone());
+                log::info!("Selected player: {:?}", player);
+                true
+            },
+            Msg::UnSelect => {
+                self.player_selected = false;
+                self.selected_player = None;
+                true
+            }
         }
     }
     fn view(&self, ctx: &Context<Self>) -> Html {
-        let sample_player = Player {
-            name: "Lebron".to_string(),
-            points: 25,
-            assists: 8,
-            rebounds: 7,
-            player_id: "1".to_string(),
-        };
-        //self.players.push(sample_player);
         let link = ctx.link();
-        html! {
-            <div>
-                <button onclick={link.callback(|_| Msg::OpenModal)}>{ "Add Player" }</button>
-                <table style="border-collapse: collapse; width: 100%;">
-                    <thead>
-                    <tr>
-                    <th style="border: 1px solid black; padding: 8px;">{"Name"}</th>
-                    <th style="border: 1px solid black; padding: 8px;">{"Points"}</th>
-                    <th style="border: 1px solid black; padding: 8px;">{"Assists"}</th>
-                    <th style="border: 1px solid black; padding: 8px;">{"Rebounds"}</th>
-                    <th style="border: 1px solid black; padding: 8px;">{"Remove"}</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    {
-                        for self.players.iter().map(|player|
-                        html!{
-                            <Player player={player.clone()} key={player.player_id.clone()}/>
-                        })
-                    }
-                    </tbody>
-                </table>
+        if !self.player_selected {
+            html! {
+                <div>
+                    <button onclick={link.callback(|_| Msg::OpenModal)}>{ "Add Player" }</button>
+                    <table style="border-collapse: collapse; width: 100%;">
+                        <thead>
+                        <tr>
+                        <th style="border: 1px solid black; padding: 8px;">{"Name"}</th>
+                        <th style="border: 1px solid black; padding: 8px;">{"Points"}</th>
+                        <th style="border: 1px solid black; padding: 8px;">{"Assists"}</th>
+                        <th style="border: 1px solid black; padding: 8px;">{"Rebounds"}</th>
+                        <th style="border: 1px solid black; padding: 8px;">{"Remove"}</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {
+                            for self.players.iter().map(|player|
+                            html!{
+                                <Player 
+                                    key={player.player_id.clone()}
+                                    player={player.clone()} 
+                                    delete={link.callback(|player| Msg::Delete(player))}
+                                    select={link.callback(|player| Msg::Select(player))}
+                                />
+                            })
+                        }
+                        </tbody>
+                    </table>
 
-                <AddPlayerModal
-                    is_open={self.modal_open}
-                    on_close={link.callback(|_| Msg::CloseModal)}
-                    on_submit={link.callback(|player| Msg::OnSubmit(player))}
-                    player_id={self.len}
+                    <AddPlayerModal
+                        is_open={self.modal_open}
+                        on_close={link.callback(|_| Msg::CloseModal)}
+                        on_submit={link.callback(|player| Msg::OnSubmit(player))}
+                        player_id={self.len}
+                    />
+                </div>
+            }
+
+        } else {
+            html!{
+                <PlayerDetails
+                    player={self.selected_player.clone().unwrap()}
+                    back={link.callback(|_| Msg::UnSelect)}
                 />
-            </div>
-            
+            }
         }
+
     }
 }
 
@@ -134,6 +173,18 @@ async fn add_player(player:Player) -> Result<Vec<Player>, reqwest::Error> {
 
     let client = Client::new();
     let response = client.put("http://127.0.0.1:6969/api/add_player").json(&player).send().await?;
+    let data = response.json::<PlayerResponse>().await?;
+    Ok(data.players)
+}
+
+async fn delete_player(player:Player) -> Result<Vec<Player>, reqwest::Error> {
+    #[derive(Debug, serde::Serialize, serde::Deserialize, Clone)]
+    struct PlayerResponse {
+        players: Vec<Player>
+    }
+
+    let client = Client::new();
+    let response = client.put("http://127.0.0.1:6969/api/delete_player").json(&player).send().await?;
     let data = response.json::<PlayerResponse>().await?;
     Ok(data.players)
 }
