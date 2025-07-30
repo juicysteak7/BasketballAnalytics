@@ -13,6 +13,7 @@ pub enum Msg {
     Submit,
     Close,
     Open,
+    UpdateSeason(i32),
     UpdateTeamName(String),
     UpdatePoints(f64),
     UpdateAssists(f64),
@@ -30,6 +31,7 @@ impl Component for AddDetailsModal {
 
     fn create(ctx: &Context<Self>) -> Self {
         Self { is_open: ctx.props().is_open, season: PlayerSeason {
+            season_number: 0,
             team_name: "".to_string(),
             season_id: ctx.props().season_id.to_string(),
             points: 0.0,
@@ -47,6 +49,7 @@ impl Component for AddDetailsModal {
                 self.season.points = 0.0;
                 self.season.assists = 0.0;
                 self.season.rebounds = 0.0;
+                self.season.season_number = 0;
                 true
             },
             Msg::Close => {
@@ -58,6 +61,10 @@ impl Component for AddDetailsModal {
                 self.is_open = true;
                 true
             },
+            Msg::UpdateSeason(number) => {
+                self.season.season_number = number;
+                true
+            }
             Msg::UpdateTeamName(team_name) => {
                 self.season.team_name = team_name;
                 true
@@ -82,6 +89,29 @@ impl Component for AddDetailsModal {
 
         html!{
             <div>
+                <div>
+                    <input
+                        placeholder=0
+                        type="number"
+                        label="Season Number"
+                        pattern=r"[0-9]+([,\.][0-9]+)?"
+                        value={self.season.season_number.to_string()}
+                        oninput={link.callback(|e: InputEvent| {
+                            let value = e.target_unchecked_into::<web_sys::HtmlInputElement>().value();
+                            let parsed = value.parse::<i32>();
+                            match parsed {
+                                Ok(value) => {
+                                    Msg::UpdateSeason(value)
+                                },
+                                Err(e) => {
+                                    log::info!("Error: {:?}", e);
+                                    Msg::UpdateSeason(0)
+                                }
+                            }
+                            //Msg::UpdateSeason(value.parse::<i32>().expect("Failed to parse into i32."))
+                        })}
+                    />
+                </div>
                 <div>
                     <input
                         placeholder="Team Name"

@@ -1,5 +1,7 @@
 use yew::prelude::*;
-use crate::{ Player, AddDetailsModal };
+use plotters::prelude::*;
+use plotters_canvas::CanvasBackend;
+use crate::{ Player, AddDetailsModal, Plotters };
 
 pub enum Msg {
     Back,
@@ -57,6 +59,7 @@ impl Component for PlayerDetails {
                 <table style="border-collapse: collapse; width: 100%;">
                     <thead>
                         <tr>
+                        <th style="border: 1px solid black; padding: 8px;">{"Season"}</th>
                         <th style="border: 1px solid black; padding: 8px;">{"Team"}</th>
                         <th style="border: 1px solid black; padding: 8px;">{"Points"}</th>
                         <th style="border: 1px solid black; padding: 8px;">{"Assists"}</th>
@@ -66,15 +69,17 @@ impl Component for PlayerDetails {
                     </thead>
                     <tbody>
                         <tr>
-                        <td style="border: 1px solid black; padding: 8px;">{"Career Averages"}</td>
+                        <td style="border: 1px solid black; padding: 8px;">{"All"}</td>
+                        <td style="border: 1px solid black; padding: 8px;">{"All"}</td>
                         <td style="border: 1px solid black; padding: 8px;">{self.player.points}</td>
                         <td style="border: 1px solid black; padding: 8px;">{self.player.assists}</td>
                         <td style="border: 1px solid black; padding: 8px;">{self.player.rebounds}</td>
-                        <td style="border: 1px solid black; padding: 8px;"><button>{"X"}</button></td>
+                        //<td style="border: 1px solid black; padding: 8px;"><button>{"X"}</button></td>
                         </tr>
                         {
                             for self.seasons.iter().map(|season| html!{
                                 <tr>
+                                    <td style="border: 1px solid black; padding: 8px;">{season.season_number}</td>
                                     <td style="border: 1px solid black; padding: 8px;">{season.team_name.clone()}</td>
                                     <td style="border: 1px solid black; padding: 8px;">{season.points}</td>
                                     <td style="border: 1px solid black; padding: 8px;">{season.assists}</td>
@@ -95,6 +100,8 @@ impl Component for PlayerDetails {
                         season_id={self.len}
                     />
                 }
+
+                <Plotters />
             </div>
         }
     }
@@ -104,8 +111,8 @@ impl Component for PlayerDetails {
 pub struct PlayerSeason {
     pub season_id: String,
     pub team_name: String,
+    pub season_number: i32,
     pub points: f64,
     pub assists: f64,
     pub rebounds: f64,
 }
-
