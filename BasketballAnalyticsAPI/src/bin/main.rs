@@ -1,4 +1,4 @@
-use BasketballAnalyticsAPI::{ Player, DataBase, Players };
+use BasketballAnalyticsAPI::{ Player, DataBase, Players, PlayerSeason };
 use serde::Serialize;
 use tokio;
 use tokio::net::TcpListener;
@@ -21,6 +21,8 @@ async fn main() -> surrealdb::Result<()> {
         .route("/api/get_all_players", get(get_all_players))
         .route("/update_player", put(update_player))
         .route("/api/delete_player", put(delete_player))
+        .route("/api/get_all_player_seasons", put(get_all_player_seasons))
+        .route("/api/add_player_season", put(add_player_season))
         .route("/", get(|| async {"Hello world!"}))
         .layer(cors);
     println!("Routing done...");
@@ -36,6 +38,31 @@ async fn main() -> surrealdb::Result<()> {
     
     println!("Server running on {}", addr);
     Ok(())
+}
+
+async fn add_player_season(Json(payload):Json<PlayerSeason>) -> impl axum::response::IntoResponse {
+    use axum::Json;
+    use serde::Serialize;
+    let db = DataBase::sign_in("root", "root").await.unwrap();
+    let result = db.add_player_season(payload).await.unwrap();
+
+
+    #[derive(Serialize)]
+    struct ResponseMessage {
+        seasons: Vec<PlayerSeason>
+    }
+    let mut seasons:Vec<PlayerSeason> = Vec::new();
+
+    match result {
+        Some(result) => {
+            seasons.push(result);
+            return Json(ResponseMessage{seasons})
+        },
+        None => {
+            return Json(ResponseMessage{seasons})
+        }
+    }
+
 }
 
 async fn add_player(Json(payload):Json<Player>) -> impl axum::response::IntoResponse {
@@ -129,6 +156,29 @@ async fn get_all_players() -> impl axum::response::IntoResponse {
         Err(e) => {
             eprintln!("{}",e);
             Json(ResponseMessage { players: Players::new(),})
+        }
+    }
+}
+
+async fn get_all_player_seasons(Json(payload):Json<String>) -> impl axum::response::IntoResponse {
+    use axum::Json;
+    use serde::Serialize;
+
+    let db = DataBase::sign_in("root", "root").await.unwrap();
+    let seasons = db.get_all_player_seasons(payload).await;
+
+    #[derive(Serialize)]
+    struct ResponseMessage {
+        seasons: Vec<PlayerSeason>
+    }
+    match seasons {
+        Ok(seasons) => {
+            println!("Seasons: {:?}", seasons);
+            Json(ResponseMessage {seasons})
+        }
+        Err(e) => {
+            eprintln!("{}",e);
+            Json(ResponseMessage {seasons: Vec::new()})
         }
     }
 }

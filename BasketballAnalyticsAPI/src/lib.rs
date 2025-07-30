@@ -21,6 +21,26 @@ impl DataBase {
             Ok(DataBase { db, _signed_in: true })
         }
 
+        pub async fn add_player_season(&self, season: PlayerSeason) -> Result<Option<PlayerSeason>, Error> {
+            let created: Option<PlayerSeason> = self.db
+                .create(("player_season", season.season_id.clone()))
+                .content(season).await?;
+            println!("created: {:?}", created);
+            Ok(created)
+        }
+
+        pub async fn get_all_player_seasons(&self, player_id:String) -> Result<Vec<PlayerSeason>, Error> {
+            println!("Here!");
+            //let seasons:Vec<PlayerSeason> = self.db.select("player_season").await?;
+            let seasons:Vec<PlayerSeason> = self.db
+                .query(format!("SELECT * FROM player_season WHERE player_id='{}'",player_id))
+                .await?
+                .take(0)?;
+            println!("seasons: {:?}", seasons);
+            println!("player_id: {:?}", player_id);
+            Ok(seasons)
+        }
+
         pub async fn add_player(&self, player:Player) -> Result<Option<Player>, Error>{
             let created: Option<Player> = self.db.create(("player", player.player_id.clone())).content(player).await?;
             println!("created: {:?}",created);
@@ -56,6 +76,17 @@ impl Player {
     pub fn new(player_id:String, name:String, points:f64, assists:f64, rebounds:f64) -> Player {
         Player {player_id, name, points, assists, rebounds}
     }
+}
+
+#[derive(Debug, Serialize, serde::Deserialize, Clone)]
+pub struct PlayerSeason {
+    season_id: String,
+    player_id: String,
+    season_number: i32,
+    team_name: String,
+    points: f64,
+    assists: f64,
+    rebounds: f64,
 }
 
 #[derive(Debug, Serialize, serde::Deserialize, Clone)]

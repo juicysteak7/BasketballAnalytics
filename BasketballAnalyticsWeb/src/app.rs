@@ -1,5 +1,5 @@
 use yew::prelude::*;
-use crate::{Player, AddPlayerModal, PlayerDetails};
+use crate::{Player, AddPlayerModal, PlayerDetails, PlayerSeason};
 use reqwest::Client;
 use wasm_bindgen_futures::spawn_local;
 use wasm_bindgen::JsCast;
@@ -11,6 +11,7 @@ pub enum Msg {
     Delete(Player),
     Select(Player),
     UnSelect,
+    PlayerSeasons(Vec<PlayerSeason>),
 }
 #[derive(Properties, PartialEq, Debug, Default)]
 pub struct AppProps {
@@ -21,7 +22,8 @@ pub struct App {
     modal_open: bool,
     len:usize,
     player_selected: bool,
-    selected_player: Option<Player>
+    selected_player: Option<Player>,
+    selected_player_seasons: Vec<PlayerSeason>,
 }
 impl Component for App {
     type Message = Msg;
@@ -29,7 +31,14 @@ impl Component for App {
     fn create(ctx: &Context<Self>) -> Self {
         let props = ctx.props();
         log::info!("props players: {:?}",props.players.clone());
-        Self { modal_open: false, len:0, players: props.players.clone(), player_selected: false, selected_player:None }
+        Self { 
+            modal_open: false, 
+            len:0, 
+            players: props.players.clone(), 
+            player_selected: false, 
+            selected_player:None,
+            selected_player_seasons: Vec::new(),
+        }
     }
     fn changed(&mut self, ctx: &Context<Self>) -> bool {
         let props = ctx.props();
@@ -38,7 +47,7 @@ impl Component for App {
         log::info!("props players: {:?}",props.players.clone());
         true
     }
-    fn update(&mut self, _ctx: &Context<Self>, msg: Self::Message) -> bool {
+    fn update(&mut self, ctx: &Context<Self>, msg: Self::Message) -> bool {
         match msg {
             Msg::OpenModal => {
                 self.modal_open = true;
@@ -86,11 +95,28 @@ impl Component for App {
                 self.player_selected = true;
                 self.selected_player = Some(player.clone());
                 log::info!("Selected player: {:?}", player);
+                let link = ctx.link().clone();
+                let selected_player = self.selected_player.clone().unwrap();
+                spawn_local(async move {
+                    match get_all_player_seasons(selected_player).await {
+                        Ok(result) => {
+                            link.send_message(Msg::PlayerSeasons(result));
+                        },
+                        Err(e) => {
+                            log::info!("Error: {:?}",e);
+                        }
+                    }
+                });
                 true
             },
             Msg::UnSelect => {
                 self.player_selected = false;
                 self.selected_player = None;
+                self.selected_player_seasons = Vec::new();
+                true
+            },
+            Msg::PlayerSeasons(seasons) => {
+                self.selected_player_seasons = seasons.clone();
                 true
             }
         }
@@ -140,14 +166,40 @@ impl Component for App {
                 <PlayerDetails
                     player={self.selected_player.clone().unwrap()}
                     back={link.callback(|_| Msg::UnSelect)}
+                    seasons={self.selected_player_seasons.clone()}
                 />
             }
         }
-
     }
 }
 
 
+pub async fn get_all_player_seasons(player: Player) -> Result<Vec<PlayerSeason>, reqwest::Error> {
+    #[derive(Debug, serde::Serialize, serde::Deserialize, Clone)]
+    struct Response {
+        seasons: Vec<PlayerSeason>,
+    }
+
+    let client = Client::new();
+    let response = client.put("http://127.0.0.1:6969/api/get_all_player_seasons")
+        .json(&player.player_id)
+        .send()
+        .await?;
+    let data = response.json::<Response>().await?;
+    Ok(data.seasons)
+}
+
+pub async fn add_player_season(season:PlayerSeason) -> Result<Vec<PlayerSeason>, reqwest::Error> {
+    #[derive(Debug, serde::Serialize, serde::Deserialize, Clone)]
+    struct Response {
+        seasons: Vec<PlayerSeason>
+    }
+
+    let client = Client::new();
+    let response = client.put("http://127.0.0.1:6969/api/add_player_season").json(&season).send().await?;
+    let data = response.json::<Response>().await?;
+    Ok(data.seasons)
+}
 
 pub async fn get_all_players() -> Result<Vec<Player>, reqwest::Error> {
     #[derive(Debug, serde::Serialize, serde::Deserialize, Clone)]

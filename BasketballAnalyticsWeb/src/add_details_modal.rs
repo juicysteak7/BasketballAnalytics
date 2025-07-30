@@ -1,5 +1,5 @@
 use yew::prelude::*;
-use crate::{PlayerSeason};
+use crate::{PlayerSeason, Player};
 
 #[derive(Properties, PartialEq)]
 pub struct AddDetailsModalProps {
@@ -7,6 +7,7 @@ pub struct AddDetailsModalProps {
     pub on_submit: Callback<PlayerSeason>,
     pub is_open: bool,
     pub season_id: usize,
+    pub player: Player,
 }
 
 pub enum Msg {
@@ -31,6 +32,7 @@ impl Component for AddDetailsModal {
 
     fn create(ctx: &Context<Self>) -> Self {
         Self { is_open: ctx.props().is_open, season: PlayerSeason {
+            player_id: ctx.props().player.player_id.clone(),
             season_number: 0,
             team_name: "".to_string(),
             season_id: ctx.props().season_id.to_string(),
