@@ -1,7 +1,7 @@
 use yew::prelude::*;
 use plotters::prelude::*;
 use plotters_canvas::CanvasBackend;
-use crate::{ Player, AddDetailsModal, Plotters, add_player_season };
+use crate::{ Player, AddDetailsModal, Plotters, add_player_season, delete_player_season };
 use wasm_bindgen_futures::spawn_local;
 use wasm_bindgen::JsCast;
 
@@ -10,6 +10,7 @@ pub enum Msg {
     Submit(PlayerSeason),
     CloseModal,
     OpenModal,
+    Delete(PlayerSeason),
 }
 
 pub struct PlayerDetails {
@@ -68,7 +69,21 @@ impl Component for PlayerDetails {
             Msg::OpenModal => {
                 self.modal_open = true;
                 true
-            }
+            },
+            Msg::Delete(to_delete) => {
+                self.seasons.retain(|season| season.season_id != to_delete.season_id);
+                spawn_local(async move {
+                    match delete_player_season(to_delete).await {
+                        Ok(result) => {
+                            log::info!("Season deleted: {:?}", result);
+                        }
+                        Err(e) => {
+                            eprintln!("{}",e);
+                        }
+                    }
+                });
+                true
+            },
         }
     }
     fn view(&self, ctx: &Context<Self>) -> Html {
@@ -96,15 +111,29 @@ impl Component for PlayerDetails {
                         //<td style="border: 1px solid black; padding: 8px;"><button>{"X"}</button></td>
                         </tr>
                         {
-                            for self.seasons.iter().map(|season| html!{
+                            for self.seasons.iter().map(|season| {
+                                let this_season = PlayerSeason {
+                                    player_id: season.player_id.clone(),
+                                    season_id: season.season_id.clone(),
+                                    season_number: season.season_number,
+                                    team_name: season.team_name.clone(),
+                                    points: season.points,
+                                    assists: season.assists,
+                                    rebounds: season.rebounds,
+                                };
+
+                                html!{
                                 <tr>
                                     <td style="border: 1px solid black; padding: 8px;">{season.season_number}</td>
                                     <td style="border: 1px solid black; padding: 8px;">{season.team_name.clone()}</td>
                                     <td style="border: 1px solid black; padding: 8px;">{season.points}</td>
                                     <td style="border: 1px solid black; padding: 8px;">{season.assists}</td>
                                     <td style="border: 1px solid black; padding: 8px;">{season.rebounds}</td>
-                                    <td style="border: 1px solid black; padding: 8px;"><button>{"X"}</button></td>
+                                    <td style="border: 1px solid black; padding: 8px;">
+                                        <button onclick={link.callback(move |_| Msg::Delete(this_season.clone()))}>{"X"}</button>
+                                    </td>
                                 </tr>
+                                }
                             })
                         }
                     </tbody>

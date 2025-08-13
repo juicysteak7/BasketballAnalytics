@@ -173,6 +173,21 @@ impl Component for App {
     }
 }
 
+pub async fn delete_player_season(season: PlayerSeason) -> Result<Vec<PlayerSeason>, reqwest::Error> {
+    #[derive(Debug, serde::Serialize, serde::Deserialize, Clone)]
+    struct Response {
+        seasons: Vec<PlayerSeason>,
+    }
+
+    let client = Client::new();
+    let response = client.put("http://127.0.0.1:6969/api/delete_player_season")
+        .json(&season)
+        .send()
+        .await?;
+
+    let data = response.json::<Response>().await?;
+    Ok(data.seasons)
+}
 
 pub async fn get_all_player_seasons(player: Player) -> Result<Vec<PlayerSeason>, reqwest::Error> {
     #[derive(Debug, serde::Serialize, serde::Deserialize, Clone)]

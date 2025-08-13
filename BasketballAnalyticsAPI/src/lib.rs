@@ -21,6 +21,18 @@ impl DataBase {
             Ok(DataBase { db, _signed_in: true })
         }
 
+
+
+        pub async fn delete_player_season(&self, season: PlayerSeason) -> Result<Option<PlayerSeason>, Error> {
+            let deleted = self.db
+                .query(format!("DELETE player_season WHERE player_id='{}' AND season_id='{}' RETURN BEFORE"
+                        ,season.player_id,season.season_id)
+                    )
+                .await?
+                .take(0)?;
+            Ok(deleted)
+        }
+
         pub async fn add_player_season(&self, season: PlayerSeason) -> Result<Option<PlayerSeason>, Error> {
             let created: Option<PlayerSeason> = self.db
                 .create(("player_season", season.season_id.clone()))
@@ -30,7 +42,6 @@ impl DataBase {
         }
 
         pub async fn get_all_player_seasons(&self, player_id:String) -> Result<Vec<PlayerSeason>, Error> {
-            println!("Here!");
             //let seasons:Vec<PlayerSeason> = self.db.select("player_season").await?;
             let seasons:Vec<PlayerSeason> = self.db
                 .query(format!("SELECT * FROM player_season WHERE player_id='{}'",player_id))
@@ -62,6 +73,7 @@ impl DataBase {
             Ok(delete)
         }
 }
+
 
 #[derive(Debug, Serialize, serde::Deserialize, Clone)]
 pub struct Player {

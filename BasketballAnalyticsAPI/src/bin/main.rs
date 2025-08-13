@@ -23,6 +23,7 @@ async fn main() -> surrealdb::Result<()> {
         .route("/api/delete_player", put(delete_player))
         .route("/api/get_all_player_seasons", put(get_all_player_seasons))
         .route("/api/add_player_season", put(add_player_season))
+        .route("/api/delete_player_season", put(delete_player_season))
         .route("/", get(|| async {"Hello world!"}))
         .layer(cors);
     println!("Routing done...");
@@ -38,6 +39,29 @@ async fn main() -> surrealdb::Result<()> {
     
     println!("Server running on {}", addr);
     Ok(())
+}
+
+async fn delete_player_season(Json(payload):Json<PlayerSeason>) -> impl axum::response::IntoResponse {
+    use axum::Json;
+    use serde::Serialize;
+    let db = DataBase::sign_in("root", "root").await.unwrap();
+    let result = db.delete_player_season(payload).await.unwrap();
+
+    #[derive(Serialize)]
+    struct ResponseMessage {
+        seasons: Vec<PlayerSeason>
+    }
+    let mut seasons:Vec<PlayerSeason> = Vec::new();
+
+    match result {
+        Some(result) => {
+            seasons.push(result);
+            return Json(ResponseMessage{seasons})
+        },
+        None => {
+            return Json(ResponseMessage{seasons})
+        }
+    }
 }
 
 async fn add_player_season(Json(payload):Json<PlayerSeason>) -> impl axum::response::IntoResponse {
