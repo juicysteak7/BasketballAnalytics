@@ -34,6 +34,7 @@ impl DataBase {
         }
 
         pub async fn add_player_season(&self, season: PlayerSeason) -> Result<Option<PlayerSeason>, Error> {
+            println!("season to add: {:?}", season);
             let created: Option<PlayerSeason> = self.db
                 .create(("player_season", season.season_id.clone()))
                 .content(season).await?;

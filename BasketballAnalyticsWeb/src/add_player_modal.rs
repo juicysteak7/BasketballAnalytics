@@ -97,7 +97,10 @@ impl Component for AddPlayerModal {
         html! {
             <div>
                 <div>
+                    <label for="Name">{"Name"}</label>
                     <input
+                        name="Name"
+                        id="Name"
                         placeholder="Name"
                         label="Name"
                         value={self.player.name.clone()}
@@ -108,7 +111,10 @@ impl Component for AddPlayerModal {
                     />
                 </div>
                 <div>
+                    <label for="Points">{"Points"}</label>
                     <input
+                        name="Points"
+                        id="Points"
                         placeholder=0.00
                         type="number"
                         label="Points"
@@ -122,7 +128,10 @@ impl Component for AddPlayerModal {
                     />
                 </div>
                 <div>
+                    <label for="Assists">{"Assists"}</label>
                     <input
+                        name="Assists"
+                        id="Assists"
                         placeholder=0.00
                         type="number"
                         label="Assists"
@@ -136,7 +145,10 @@ impl Component for AddPlayerModal {
                     />
                 </div>
                 <div>
+                    <label for="Rebounds">{"Rebounds"}</label>
                     <input
+                        name="Rebounds"
+                        id="Rebounds"
                         placeholder=0.00
                         type="number"
                         label="Rebounds"

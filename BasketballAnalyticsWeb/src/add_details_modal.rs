@@ -92,7 +92,10 @@ impl Component for AddDetailsModal {
         html!{
             <div>
                 <div>
+                    <label for="Season">{"Season"}</label>
                     <input
+                        name="Season"
+                        id="Season"
                         placeholder=0
                         type="number"
                         label="Season Number"
@@ -115,7 +118,10 @@ impl Component for AddDetailsModal {
                     />
                 </div>
                 <div>
+                    <label for="TeamName">{"Team Name"}</label>
                     <input
+                        name="TeamName"
+                        id="TeamName"
                         placeholder="Team Name"
                         label="Team Name"
                         value={self.season.team_name.clone()}
@@ -126,7 +132,10 @@ impl Component for AddDetailsModal {
                     />
                 </div>
                 <div>
+                    <label for="Points">{"Points"}</label>
                     <input
+                        name="Points"
+                        id="Points"
                         placeholder=0.00
                         type="number"
                         label="Points"
@@ -140,7 +149,10 @@ impl Component for AddDetailsModal {
                     />
                 </div>
                 <div>
+                    <label for="Assists">{"Assists"}</label>
                     <input
+                        name="Assists"
+                        id="Assists"
                         placeholder=0.00
                         type="number"
                         label="Assists"
@@ -154,7 +166,10 @@ impl Component for AddDetailsModal {
                     />
                 </div>
                 <div>
+                    <label for="Rebounds">{"Rebounds"}</label>
                     <input
+                        name="Rebounds"
+                        id="Rebounds"
                         placeholder=0.00
                         type="number"
                         label="Rebounds"
@@ -168,8 +183,8 @@ impl Component for AddDetailsModal {
                     />
                 </div>
                 <div>
-                    <button onclick={link.callback(|_| Msg::Close)}>{"Close"}</button>
-                    <button onclick={link.callback(|_| Msg::Submit)}>{"Submit"}</button>
+                    <button class="btn-primary" onclick={link.callback(|_| Msg::Close)}>{"Close"}</button>
+                    <button class="btn-primary" onclick={link.callback(|_| Msg::Submit)}>{"Submit"}</button>
                 </div>
             </div>
         }

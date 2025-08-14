@@ -39,41 +39,78 @@ impl Component for Plotters {
                 let element: HtmlCanvasElement = self.canvas.cast().unwrap();
 
                 let rect = element.get_bounding_client_rect();
-                log::info!("rect width: {:?}, rect height: {:?}", rect.width(), rect.height());
-                //element.set_height(rect.height() as u32);
-                //element.set_width(rect.width() as u32);
 
-                element.set_height(300);
-                element.set_width(600);
+                let mut player_points: Vec<(i32,f64)> = Vec::new();
+                let mut player_assists: Vec<(i32,f64)> = Vec::new();
+                let mut player_rebounds: Vec<(i32, f64)> = Vec::new();
+                let mut max_points: f64 = 0.0;
+                let mut max_season: i32 = 0;
+
+                if self.data.len() > 0 {
+                    max_season = self.data.len() as i32;
+                }
+
+                for season in &self.data {
+                    if season.points > max_points {
+                        max_points = season.points as f64;
+                    }
+                    player_points.push((season.season_number, season.points));
+                    player_assists.push((season.season_number, season.assists));
+                    player_rebounds.push((season.season_number, season.rebounds));
+                }
+
+                element.set_height(rect.height() as u32);
+                element.set_width(rect.width() as u32);
                 let backend = CanvasBackend::with_canvas_object(element).unwrap();
 
                 let drawing_area = backend.into_drawing_area();
                 drawing_area.fill(&WHITE).unwrap();
                       
                 let mut chart = ChartBuilder::on(&drawing_area).caption("Test", ("sans-serif", 14).into_font())
-                    .margin(5)
+                    .margin(10)
                     .x_label_area_size(30)
                     .y_label_area_size(30)
-                    .build_cartesian_2d(0i32..10i32, 0f64..10f64).unwrap();
+                    .build_cartesian_2d(0i32..max_season, 0f64..max_points).unwrap();
                       
-                chart.configure_mesh().draw().unwrap();
+                chart.configure_mesh()
+                    .disable_mesh()
+                    .draw()
+                    .unwrap();
 
-                let mut player_points: Vec<(i32,f64)> = Vec::new();
-
-                for season in &self.data {
-                    player_points.push((season.season_number, season.points));
-                }
-
+                /*
                 chart.draw_series(PointSeries::of_element(
-                        player_points,
+                        player_points.clone(),
                         5,
                         ShapeStyle::from(&RED).filled(),
                         &|coord, size, style| {
                             return EmptyElement::at(coord)
                             + Circle::new((0,0), size, style)
-                            + Text::new(format!("{:?}", coord), (10, 0), ("sans-serif", 10).into_font());
+                            + Text::new(format!("{:?}", coord.1), (10, 0), ("sans-serif", 10).into_font());
                         },
-                )).unwrap();
+                )).unwrap()
+                    .label("Points Per Season")
+                    .legend(|(x,y)| PathElement::new(vec![(x,y), (x+20,y)],&RED));
+                */
+
+                // Points Per Game
+                chart.draw_series(LineSeries::new(player_points, &RED)).unwrap()
+                    .label("Points Per Game")
+                    .legend(|(x,y)| PathElement::new(vec![(x,y), (x+20,y)],&RED));
+
+                // Assists Per Game
+                chart.draw_series(LineSeries::new(player_assists, &BLUE)).unwrap()
+                    .label("Assists Per Game")
+                    .legend(|(x,y)| PathElement::new(vec![(x,y), (x+20,y)],&BLUE));
+
+                chart.draw_series(LineSeries::new(player_rebounds, &GREEN)).unwrap()
+                    .label("Rebounds Per Game")
+                    .legend(|(x,y)| PathElement::new(vec![(x,y), (x+20,y)], &GREEN));
+
+                chart.configure_series_labels()
+                    .border_style(&BLACK)
+                    .background_style(&WHITE.mix(0.8))
+                    .draw()
+                    .unwrap();
 
                 /*
                 chart.draw_series(LineSeries::new((-50..=50)
@@ -92,7 +129,7 @@ impl Component for Plotters {
 
     fn view(&self, ctx: &Context<Self>) -> Html {
         html!{
-            <div>
+            <div class="chart-container">
                 <canvas style="width:60%;" ref={self.canvas.clone()}/>
             </div>
         }

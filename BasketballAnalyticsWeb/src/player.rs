@@ -64,13 +64,13 @@ impl Component for Player {
         let link = ctx.link();
         html!{
             <tr>
-                <td style="border: 1px solid black; padding: 8px;" onclick={link.callback(|_| Msg::Select)}>
+                <td onclick={link.callback(|_| Msg::Select)}>
                     {player.name}
                 </td>
-                <td style="border: 1px solid black; padding: 8px;">{player.points}</td>
-                <td style="border: 1px solid black; padding: 8px;">{player.assists}</td>
-                <td style="border: 1px solid black; padding: 8px;">{player.rebounds}</td>
-                <td style="border: 1px solid black; padding: 8px;">
+                <td>{player.points}</td>
+                <td>{player.assists}</td>
+                <td>{player.rebounds}</td>
+                <td>
                     <button aria-label="Close" onclick={link.callback(|_| Msg::Delete)}>{"X"}</button>
                 </td>
             </tr>

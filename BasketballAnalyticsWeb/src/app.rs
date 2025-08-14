@@ -126,15 +126,25 @@ impl Component for App {
         if !self.player_selected {
             html! {
                 <div>
-                    <button onclick={link.callback(|_| Msg::OpenModal)}>{ "Add Player" }</button>
-                    <table style="border-collapse: collapse; width: 100%;">
+                    <button class="btn-primary" onclick={link.callback(|_| Msg::OpenModal)}>{ "Add Player" }</button>
+                    if self.modal_open { 
+                        <div class="modal">
+                            <AddPlayerModal
+                                is_open={self.modal_open}
+                                on_close={link.callback(|_| Msg::CloseModal)}
+                                on_submit={link.callback(|player| Msg::OnSubmit(player))}
+                                player_id={self.len}
+                            />
+                        </div>
+                    }
+                    <table class="stats-table">
                         <thead>
                         <tr>
-                        <th style="border: 1px solid black; padding: 8px;">{"Name"}</th>
-                        <th style="border: 1px solid black; padding: 8px;">{"Points"}</th>
-                        <th style="border: 1px solid black; padding: 8px;">{"Assists"}</th>
-                        <th style="border: 1px solid black; padding: 8px;">{"Rebounds"}</th>
-                        <th style="border: 1px solid black; padding: 8px;">{"Remove"}</th>
+                        <th>{"Name"}</th>
+                        <th>{"Points"}</th>
+                        <th>{"Assists"}</th>
+                        <th>{"Rebounds"}</th>
+                        <th>{"Remove"}</th>
                         </tr>
                         </thead>
                         <tbody>
@@ -151,13 +161,6 @@ impl Component for App {
                         }
                         </tbody>
                     </table>
-
-                    <AddPlayerModal
-                        is_open={self.modal_open}
-                        on_close={link.callback(|_| Msg::CloseModal)}
-                        on_submit={link.callback(|player| Msg::OnSubmit(player))}
-                        player_id={self.len}
-                    />
                 </div>
             }
 

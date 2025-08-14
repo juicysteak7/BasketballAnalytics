@@ -32,11 +32,15 @@ impl Component for PlayerDetails {
     type Message = Msg;
 
     fn create(ctx: &Context<Self>) -> Self {
-        Self { player: ctx.props().player.clone(), seasons: ctx.props().seasons.clone(), len: 0, modal_open: false }
+        Self { player: ctx.props().player.clone(), 
+            seasons: ctx.props().seasons.clone(), 
+            len: ctx.props().seasons.len(), 
+            modal_open: false }
     }
 
     fn changed(&mut self, ctx: &Context<Self>) -> bool {
         self.seasons = ctx.props().seasons.clone();
+        self.len = ctx.props().seasons.len();
         true
     }
 
@@ -47,6 +51,7 @@ impl Component for PlayerDetails {
                 true
             },
             Msg::Submit(season) => {
+                log::info!("season to add: {:?}", season);
                 self.seasons.push(season.clone());
                 self.len = self.seasons.len();
                 self.modal_open = false;
@@ -90,25 +95,38 @@ impl Component for PlayerDetails {
         let link = ctx.link();
         html!{
             <div>
-                <table style="border-collapse: collapse; width: 100%;">
+                <button class="btn-primary" onclick={link.callback(|_| Msg::Back)}>{"Back"}</button>
+                <button class="btn-primary" onclick={link.callback(|_| Msg::OpenModal)}>{"Add Season"}</button>
+                if self.modal_open {
+                    <div class="modal">
+                        <AddDetailsModal
+                            on_submit={link.callback(|season| Msg::Submit(season))}
+                            on_close={link.callback(|_| Msg::CloseModal)}
+                            is_open={self.modal_open}
+                            season_id={self.len}
+                            player={self.player.clone()}
+                        />
+                    </div>
+                }
+                <table class="stats-table">
                     <thead>
                         <tr>
-                        <th style="border: 1px solid black; padding: 8px;">{"Season"}</th>
-                        <th style="border: 1px solid black; padding: 8px;">{"Team"}</th>
-                        <th style="border: 1px solid black; padding: 8px;">{"Points"}</th>
-                        <th style="border: 1px solid black; padding: 8px;">{"Assists"}</th>
-                        <th style="border: 1px solid black; padding: 8px;">{"Rebounds"}</th>
-                        <th style="border: 1px solid black; padding: 8px;">{"Remove"}</th>
+                        <th>{"Season"}</th>
+                        <th>{"Team"}</th>
+                        <th>{"Points"}</th>
+                        <th>{"Assists"}</th>
+                        <th>{"Rebounds"}</th>
+                        <th>{"Remove"}</th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr>
-                        <td style="border: 1px solid black; padding: 8px;">{"All"}</td>
-                        <td style="border: 1px solid black; padding: 8px;">{"All"}</td>
-                        <td style="border: 1px solid black; padding: 8px;">{self.player.points}</td>
-                        <td style="border: 1px solid black; padding: 8px;">{self.player.assists}</td>
-                        <td style="border: 1px solid black; padding: 8px;">{self.player.rebounds}</td>
-                        //<td style="border: 1px solid black; padding: 8px;"><button>{"X"}</button></td>
+                        <td>{"All"}</td>
+                        <td>{"All"}</td>
+                        <td>{self.player.points}</td>
+                        <td>{self.player.assists}</td>
+                        <td>{self.player.rebounds}</td>
+                        <td></td>
                         </tr>
                         {
                             for self.seasons.iter().map(|season| {
@@ -124,12 +142,12 @@ impl Component for PlayerDetails {
 
                                 html!{
                                 <tr>
-                                    <td style="border: 1px solid black; padding: 8px;">{season.season_number}</td>
-                                    <td style="border: 1px solid black; padding: 8px;">{season.team_name.clone()}</td>
-                                    <td style="border: 1px solid black; padding: 8px;">{season.points}</td>
-                                    <td style="border: 1px solid black; padding: 8px;">{season.assists}</td>
-                                    <td style="border: 1px solid black; padding: 8px;">{season.rebounds}</td>
-                                    <td style="border: 1px solid black; padding: 8px;">
+                                    <td>{season.season_number}</td>
+                                    <td>{season.team_name.clone()}</td>
+                                    <td>{season.points}</td>
+                                    <td>{season.assists}</td>
+                                    <td>{season.rebounds}</td>
+                                    <td>
                                         <button onclick={link.callback(move |_| Msg::Delete(this_season.clone()))}>{"X"}</button>
                                     </td>
                                 </tr>
@@ -138,18 +156,6 @@ impl Component for PlayerDetails {
                         }
                     </tbody>
                 </table>
-                <button onclick={link.callback(|_| Msg::Back)}>{"Back"}</button>
-                <button onclick={link.callback(|_| Msg::OpenModal)}>{"Add Season"}</button>
-                if self.modal_open {
-                    <AddDetailsModal
-                        on_submit={link.callback(|season| Msg::Submit(season))}
-                        on_close={link.callback(|_| Msg::CloseModal)}
-                        is_open={self.modal_open}
-                        season_id={self.len}
-                        player={self.player.clone()}
-                    />
-                }
-
                 <Plotters 
                     data={self.seasons.clone()}
                 />
