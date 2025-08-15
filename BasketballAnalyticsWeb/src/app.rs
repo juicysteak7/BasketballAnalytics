@@ -12,6 +12,7 @@ pub enum Msg {
     Select(Player),
     UnSelect,
     PlayerSeasons(Vec<PlayerSeason>),
+    Check(Player),
 }
 #[derive(Properties, PartialEq, Debug, Default)]
 pub struct AppProps {
@@ -24,6 +25,8 @@ pub struct App {
     player_selected: bool,
     selected_player: Option<Player>,
     selected_player_seasons: Vec<PlayerSeason>,
+    checked_players: Vec<Player>,
+    checked_players_seasons: Vec<PlayerSeason>,
 }
 impl Component for App {
     type Message = Msg;
@@ -38,6 +41,8 @@ impl Component for App {
             player_selected: false, 
             selected_player:None,
             selected_player_seasons: Vec::new(),
+            checked_players: Vec::new(),
+            checked_players_seasons: Vec::new(),
         }
     }
     fn changed(&mut self, ctx: &Context<Self>) -> bool {
@@ -109,6 +114,26 @@ impl Component for App {
                 });
                 true
             },
+            Msg::Check(player) => {
+                let mut contains:bool = false;
+                for p in &self.checked_players {
+                    if p.player_id == player.player_id {
+                        contains = true;
+                    }
+                }
+                if !contains {
+                    self.checked_players.push(player.clone());
+                } else {
+                    self.checked_players.retain(|p| p.player_id != player.player_id);
+                }
+                /*if !self.checked_players.contains(&player.clone()) {
+                    self.checked_players.push(player.clone());
+                } else {
+                    self.checked_players.retain(|p| p.player_id != player.player_id);
+                }*/
+                log::info!("Checked players: {:?}", self.checked_players.clone());
+                true
+            }
             Msg::UnSelect => {
                 self.player_selected = false;
                 self.selected_player = None;
@@ -140,6 +165,7 @@ impl Component for App {
                     <table class="stats-table">
                         <thead>
                         <tr>
+                        <th>{"Select"}</th>
                         <th>{"Name"}</th>
                         <th>{"Points"}</th>
                         <th>{"Assists"}</th>
@@ -156,6 +182,7 @@ impl Component for App {
                                     player={player.clone()} 
                                     delete={link.callback(|player| Msg::Delete(player))}
                                     select={link.callback(|player| Msg::Select(player))}
+                                    check={link.callback(|player| Msg::Check(player))}
                                 />
                             })
                         }
@@ -219,14 +246,14 @@ pub async fn add_player_season(season:PlayerSeason) -> Result<Vec<PlayerSeason>,
     Ok(data.seasons)
 }
 
-pub async fn get_all_players() -> Result<Vec<Player>, reqwest::Error> {
+pub async fn get_all_players() -> Result<Vec<PlayerData>, reqwest::Error> {
     #[derive(Debug, serde::Serialize, serde::Deserialize, Clone)]
     struct PlayerResponse {
         players: Players
     }
     #[derive(Debug, serde::Serialize, serde::Deserialize, Clone)]
     struct Players {
-        players: Vec<Player>
+        players: Vec<PlayerData>
     }
 
     let client = Client::new();
@@ -235,26 +262,50 @@ pub async fn get_all_players() -> Result<Vec<Player>, reqwest::Error> {
     Ok(data.players.players)
 }
 
-async fn add_player(player:Player) -> Result<Vec<Player>, reqwest::Error> {
+#[derive(Debug, serde::Serialize, serde::Deserialize, Clone)]
+pub struct PlayerData {
+    pub player_id: String,
+    pub name: String,
+    pub points: f64,
+    pub assists: f64,
+    pub rebounds: f64,
+}
+
+async fn add_player(player:Player) -> Result<Vec<PlayerData>, reqwest::Error> {
     #[derive(Debug, serde::Serialize, serde::Deserialize, Clone)]
     struct PlayerResponse {
-        players: Vec<Player>
+        players: Vec<PlayerData>
     }
+    let to_send = PlayerData {
+        player_id: player.player_id.clone(),
+        name: player.name.clone(),
+        points: player.points,
+        assists: player.assists,
+        rebounds: player.rebounds,
+    };
 
     let client = Client::new();
-    let response = client.put("http://127.0.0.1:6969/api/add_player").json(&player).send().await?;
+    let response = client.put("http://127.0.0.1:6969/api/add_player").json(&to_send).send().await?;
     let data = response.json::<PlayerResponse>().await?;
     Ok(data.players)
 }
 
-async fn delete_player(player:Player) -> Result<Vec<Player>, reqwest::Error> {
+async fn delete_player(player:Player) -> Result<Vec<PlayerData>, reqwest::Error> {
     #[derive(Debug, serde::Serialize, serde::Deserialize, Clone)]
     struct PlayerResponse {
-        players: Vec<Player>
+        players: Vec<PlayerData>
     }
 
+    let to_send = PlayerData {
+        player_id: player.player_id.clone(),
+        name: player.name.clone(),
+        points: player.points,
+        assists: player.assists,
+        rebounds: player.rebounds,
+    };
+
     let client = Client::new();
-    let response = client.put("http://127.0.0.1:6969/api/delete_player").json(&player).send().await?;
+    let response = client.put("http://127.0.0.1:6969/api/delete_player").json(&to_send).send().await?;
     let data = response.json::<PlayerResponse>().await?;
     Ok(data.players)
 }

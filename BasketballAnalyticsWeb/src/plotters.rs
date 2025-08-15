@@ -130,7 +130,7 @@ impl Component for Plotters {
     fn view(&self, ctx: &Context<Self>) -> Html {
         html!{
             <div class="chart-container">
-                <canvas style="width:60%;" ref={self.canvas.clone()}/>
+                <canvas ref={self.canvas.clone()}/>
             </div>
         }
     }

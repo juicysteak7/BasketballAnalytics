@@ -36,7 +36,9 @@ impl Component for AddPlayerModal {
                 name: "".to_string(), 
                 points: 0.0, 
                 assists: 0.0, 
-                rebounds: 0.0 }}
+                rebounds: 0.0,
+                checked: false,
+            }}
     }
 
     fn update(&mut self, ctx: &Context<Self>, msg: Self::Message) -> bool {

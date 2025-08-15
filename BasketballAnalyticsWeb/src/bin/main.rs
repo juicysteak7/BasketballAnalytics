@@ -16,7 +16,18 @@ fn start_app() -> Html {
                         // let players:Players = Players { players: data };
                         // println!("Got all players: {:?}", players);
                         // log::info!("got all players: {:?}", players);
-                        init.set(Players {players: data});
+                        let mut players: Vec<Player> = Vec::new();
+                        for player in &data {
+                            players.push(Player {
+                                player_id: player.player_id.clone(),
+                                name: player.name.clone(),
+                                points: player.points,
+                                assists: player.assists,
+                                rebounds: player.rebounds,
+                                checked: false,
+                            });
+                        } 
+                        init.set(Players {players: players});
                                                                                                                     
                     }
                     Err(e) => {
